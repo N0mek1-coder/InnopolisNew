@@ -68,3 +68,7 @@ def create_item(item: ItemCreate):
 from app.api.items import router as items_router
 
 app.include_router(items_router)
+
+from app.database import Base, engine
+
+Base.metadata.create_all(bind=engine)
