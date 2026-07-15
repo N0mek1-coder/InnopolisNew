@@ -1,17 +1,19 @@
-import sys
+
 from pathlib import Path
 
 import uvicorn
-from fastapi import FastAPI
 
-from app.api.health import router as health_router
+
 from app.config.config import get_settings
 from app.database import Base, engine
 from app.handlers.auth import router as auth_router
-from app.handlers.books import router as books_router
+from app.handlers.recipes import router as recipes_router
 from app.handlers.users import router as users_router
-from app.models.book import Book
-from app.models.user import User
+
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+
+from app.handlers import images
 
 settings = get_settings()
 app = FastAPI(
@@ -22,9 +24,25 @@ app = FastAPI(
 
 Base.metadata.create_all(bind=engine)
 app.include_router(auth_router)
-app.include_router(books_router)
+app.include_router(recipes_router)
 app.include_router(users_router)
-app.include_router(health_router)
+
+
+
+MEDIA_DIR = Path(__file__).resolve().parent / "media"
+MEDIA_DIR.mkdir(parents=True, exist_ok=True)
+
+app.mount(
+    "/media",
+    StaticFiles(directory=MEDIA_DIR),
+    name="media",
+)
+
+app.include_router(images.router)
+
+
+
+
 
 
 @app.get("/")
