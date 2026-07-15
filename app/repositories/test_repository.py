@@ -1,23 +1,23 @@
 from app.database import Base, SessionLocal, engine
-from app.models.book import Book
-from app.repositories.book_repository import BookRepository
+from app.models.recipe import Recipe
+from app.repositories.recipe_repository import RecipeRepository
 
 Base.metadata.create_all(bind=engine)
 
 db = SessionLocal()
 
-repository = BookRepository(db)
+repository = RecipeRepository(db)
 
-book = Book(
+recipe = Recipe(
     title="Высоконагруженные приложения",
     author="Мартин Клеппман",
 )
 
-repository.create(book)
+repository.create(recipe)
 
-books = repository.get_all()
+recipes = repository.get_all()
 
-for book in books:
-    print(book.id, book.title, book.author)
+for recipe in recipes:
+    print(recipe.id, recipe.title, recipe.author)
 
 db.close()
