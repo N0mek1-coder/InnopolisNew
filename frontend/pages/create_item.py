@@ -1,45 +1,41 @@
-import streamlit as st
 import requests
+import streamlit as st
 
-from frontend.api.client import BACKEND_URL, upload_image
+from api.client import create_recipe, get_error_message
+from auth.state import require_admin
 
 
-image_url = f"{BACKEND_URL}{recipe['photo_path']}"
+require_admin()
+st.header("Новая запись")
 
-st.title("Создание сущности")
+with st.form("create_recipe_form"):
+    title = st.text_input("Название")
+    short_description = st.text_area("Краткое описание")
+    description = st.text_area("Полное описание")
+    image_url = st.text_input("Ссылка на изображение")
+    submitted = st.form_submit_button("Создать")
 
-name = st.text_input("Название")
-description = st.text_area("Описание")
+if submitted:
+    if not title.strip():
+        st.error("Укажите название.")
+        st.stop()
 
-uploaded_file = st.file_uploader("Изображение")
+    payload = {
+        "title": title.strip(),
+        "short_description": short_description.strip(),
+        "description": description.strip(),
+        "image_url": image_url.strip() or None,
+    }
 
-if uploaded_file is not None:
-    st.image(uploaded_file)
+    try:
+        response = create_recipe(payload)
+    except requests.RequestException:
+        st.error("Не удалось выполнить запрос к backend.")
+        st.stop()
 
-if st.button("Создать"):
-    # 1. создаём сущность без изображения
-    create_response = requests.post(
-        f"{BACKEND_URL}/recipes",
-        json={
-            "name": name,
-            "description": description,
-        },
-    )
-
-    recipe = create_response.json()
-    recipe_id = recipe["id"]
-
-    # 2. загружаем изображение
-    image_data = upload_image(uploaded_file)
-
-    # 3. привязываем изображение к сущности
-    requests.patch(
-        f"{BACKEND_URL}/recipes/{recipe_id}",
-        json={
-            "photo_path": image_data["photo_path"],
-        },
-    )
-
-    st.success("Сущность создана")
-
-    st.image(image_data["image_url"])
+    if response.status_code in (200, 201):
+        created_recipe = response.json()
+        st.session_state["selected_recipe_id"] = created_recipe["id"]
+        st.switch_page("pages/details.py")
+    else:
+        st.error(get_error_message(response))
