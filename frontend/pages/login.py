@@ -43,7 +43,7 @@ if submitted:
         st.stop()
 
     # Временно сохраняем JWT, чтобы запросить защищённый профиль.
-    st.session_state["access_token"] = access_token
+    save_auth(access_token, {})
 
     try:
         profile_response = get_profile()

@@ -5,6 +5,8 @@ from api.client import get_error_message, get_profile
 from auth.state import clear_auth, require_login, save_auth
 
 
+
+
 require_login()
 st.header("Профиль")
 

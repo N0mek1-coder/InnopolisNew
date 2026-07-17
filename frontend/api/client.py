@@ -2,6 +2,8 @@ from streamlit import session_state
 
 import requests
 
+client = requests.Session()
+
 
 BACKEND_URL = "http://127.0.0.1:8000"
 
@@ -26,7 +28,7 @@ def login(email: str, password: str) -> requests.Response:
         "email": email,
         "password": password,
     }
-    return requests.post(LOGIN_ENDPOINT, json=data)
+    return client.post(LOGIN_ENDPOINT, json=data)
 
 
 def request_with_authorization_header(
@@ -40,11 +42,11 @@ def request_with_authorization_header(
     }
 
     if request_type == "GET":
-        response = requests.get(endpoint, headers=headers, params=params)
+        response = client.get(endpoint, headers=headers, params=params)
     elif request_type == "POST":
-        response = requests.post(endpoint, headers=headers, params=params, json=payload)
+        response = requests.post(endpoint, headers=headers, params=params)
     elif request_type == "PATCH":
-        response = requests.patch(endpoint, headers=headers, params=params, json=payload)
+        response = requests.patch(endpoint, headers=headers, params=params)
     elif request_type == "DELETE":
         response = requests.delete(endpoint, headers=headers, params=params)
     else:
@@ -118,4 +120,8 @@ def update_recipe(recipe_id: int, payload: dict) -> requests.Response:
 
 def delete_recipe(recipe_id: int) -> requests.Response:
     endpoint = f"{RECIPES_ENDPOINT}{recipe_id}/"
-    return request_with_authorization_header("DELETE", endpoint)
+    return request_with_authorization_header(
+        "DELETE", endpoint)
+
+
+
